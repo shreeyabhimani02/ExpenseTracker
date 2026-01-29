@@ -1,20 +1,21 @@
-# Use Node LTS as base image
 FROM node:20-alpine
 
-# Set working directory
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy all source code
 COPY . .
 
-# Expose port (example 3000)
+# Change ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
 EXPOSE 3000
 
-# Start the application
 CMD ["npm", "start"]
