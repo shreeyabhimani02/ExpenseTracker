@@ -1,10 +1,13 @@
 FROM node:20-alpine AS build
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
 
-COPY . .
+COPY src ./src
+COPY public ./public
+
 RUN npm run build
 
 FROM nginx:alpine
