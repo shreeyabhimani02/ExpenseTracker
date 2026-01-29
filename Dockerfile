@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-COPY . .
+COPY src ./src
+COPY public ./public
 
 # Change ownership
 RUN chown -R appuser:appgroup /app
