@@ -7,12 +7,14 @@ WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
 
-RUN npm install && npm run build
+
 
 COPY vite.config.js ./
 COPY index.html ./
 COPY src ./src
 COPY public ./public
+
+RUN npm install && npm run build
 
 # Stage 2: Serve with Nginx Securely
 FROM nginx:alpine
