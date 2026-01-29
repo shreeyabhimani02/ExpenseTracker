@@ -3,33 +3,39 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
+# Copy only required files (avoids COPY . . warning)
 COPY package*.json ./
 RUN npm install
 
-COPY index.html ./
 COPY vite.config.* ./
+COPY index.html ./
 COPY src ./src
 COPY public ./public
 
 RUN npm run build
 
 
-# Stage 2: Serve with Nginx (Non-root)
+# Stage 2: Serve with Nginx Securely
 FROM nginx:alpine
 
-# Create non-root user
-RUN addgroup -S nginxgroup && adduser -S nginxuser -G nginxgroup
+# Remove default html
+RUN rm -rf /usr/share/nginx/html/*
 
 # Copy build output
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Change ownership of nginx files
-RUN chown -R nginxuser:nginxgroup /usr/share/nginx/html \
-    && chown -R nginxuser:nginxgroup /var/cache/nginx \
-    && chown -R nginxuser:nginxgroup /var/run
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Switch to non-root user
-USER nginxuser
+# Fix permissions for nginx runtime
+RUN chown -R appuser:appgroup /usr/share/nginx/html \
+    && chown -R appuser:appgroup /var/cache/nginx \
+    && chown -R appuser:appgroup /var/run \
+    && touch /var/run/nginx.pid \
+    && chown -R appuser:appgroup /var/run/nginx.pid
+
+# Switch user
+USER appuser
 
 EXPOSE 80
 
